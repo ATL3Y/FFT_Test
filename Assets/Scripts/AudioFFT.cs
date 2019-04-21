@@ -2,30 +2,33 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(AudioSource))]
+[RequireComponent ( typeof ( AudioSource ) )]
 public class AudioFFT : MonoBehaviour
 {
 
     AudioSource _audioSource;
     public static float[] samples = new float[512];
     public static float[] freqBand = new float[8];
+    public static float[] bandBuffer = new float[8];
+    private float[] _bufferDecrease = new float[8];
 
     // Start is called before the first frame update
-    void Start()
+    void Start ( )
     {
         _audioSource = GetComponent<AudioSource> ( );
     }
 
     // Update is called once per frame
-    void Update()
+    void Update ( )
     {
         GetSpectrumAudioSource ( );
         MakeFrequencyBands ( );
+        BandBuffer ( );
     }
 
     private void GetSpectrumAudioSource ( )
     {
-        _audioSource.GetSpectrumData (samples, 0, FFTWindow.Blackman );
+        _audioSource.GetSpectrumData ( samples, 0, FFTWindow.Blackman );
     }
 
     private void MakeFrequencyBands ( )
@@ -62,7 +65,7 @@ public class AudioFFT : MonoBehaviour
 
         int count = 0;
 
-        for(int i=0; i<8; i++ )
+        for ( int i = 0; i < 8; i++ )
         {
             float average = 0f;
             int sampleCount = (int)Mathf.Pow(2, i) * 2;
@@ -72,7 +75,7 @@ public class AudioFFT : MonoBehaviour
                 sampleCount += 2;
             }
 
-            for(int j=0; j<sampleCount; j++ )
+            for ( int j = 0; j < sampleCount; j++ )
             {
                 average += samples [ count ] * ( count + 1 );
                 count++;
@@ -81,5 +84,22 @@ public class AudioFFT : MonoBehaviour
             freqBand [ i ] = average * 10f;
         }
 
+    }
+
+    private void BandBuffer ( )
+    {
+        for ( int i = 0; i < 8; i++ )
+        {
+            if ( freqBand [ i ] > bandBuffer [ i ] )
+            {
+                bandBuffer [ i ] = freqBand [ i ];
+                _bufferDecrease [ i ] = .005f;
+            }
+            if ( freqBand [ i ] < bandBuffer [ i ] )
+            {
+                bandBuffer [ i ] -= _bufferDecrease [ i ];
+                _bufferDecrease [ i ] *= 1.2f;
+            }
+        }
     }
 }
