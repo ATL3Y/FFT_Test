@@ -8,14 +8,23 @@ public class AudioFFT : MonoBehaviour
 
     AudioSource _audioSource;
     public static float[] samples = new float[512];
-    public static float[] freqBand = new float[8];
-    public static float[] bandBuffer = new float[8];
+    private float[] _freqBand = new float[8];
+    private float[] _bandBuffer = new float[8];
     private float[] _bufferDecrease = new float[8];
+
+    private float[] _freqBandHighest = new float[8];
+    public static float[] audioBand = new float [8];
+    public static float[] audioBandBuffer = new float[8];
+
 
     // Start is called before the first frame update
     void Start ( )
     {
         _audioSource = GetComponent<AudioSource> ( );
+        GetSpectrumAudioSource ( );
+        MakeFrequencyBands ( );
+        BandBuffer ( );
+        CreateAudioBands ( );
     }
 
     // Update is called once per frame
@@ -24,6 +33,20 @@ public class AudioFFT : MonoBehaviour
         GetSpectrumAudioSource ( );
         MakeFrequencyBands ( );
         BandBuffer ( );
+        CreateAudioBands ( );
+    }
+
+    private void CreateAudioBands ( )
+    {
+        for ( int i = 0; i < 8; i++ )
+        {
+            if ( _freqBand [ i ] > _freqBandHighest [ i ] )
+            {
+                _freqBandHighest [ i ] = _freqBand [ i ];
+            }
+            audioBand [ i ] = ( _freqBand [ i ] / _freqBandHighest [ i ] );
+            audioBandBuffer [ i ] = ( _bandBuffer [ i ] / _freqBandHighest [ i ] );
+        }
     }
 
     private void GetSpectrumAudioSource ( )
@@ -81,23 +104,23 @@ public class AudioFFT : MonoBehaviour
                 count++;
             }
             average /= count;
-            freqBand [ i ] = average * 10f;
+            _freqBand [ i ] = average * 10f;
         }
 
     }
 
     private void BandBuffer ( )
     {
-        for ( int i = 0; i < 8; i++ )
+        for ( int i = 0; i < 8; ++i )
         {
-            if ( freqBand [ i ] > bandBuffer [ i ] )
+            if ( _freqBand [ i ] > _bandBuffer [ i ] )
             {
-                bandBuffer [ i ] = freqBand [ i ];
+                _bandBuffer [ i ] = _freqBand [ i ];
                 _bufferDecrease [ i ] = .005f;
             }
-            if ( freqBand [ i ] < bandBuffer [ i ] )
+            if ( _freqBand [ i ] < _bandBuffer [ i ] )
             {
-                bandBuffer [ i ] -= _bufferDecrease [ i ];
+                _bandBuffer [ i ] -= _bufferDecrease [ i ];
                 _bufferDecrease [ i ] *= 1.2f;
             }
         }
