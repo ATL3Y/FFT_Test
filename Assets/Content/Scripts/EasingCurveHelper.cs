@@ -5,6 +5,16 @@ using UnityEngine;
 // To see curves go to: http://gizma.com/easing/
 public static class EasingCurveHelper
 {
+    public enum Curve { Default = -1, Linear,
+        EaseInQuad, EaseOutQuad, EaseInOutQuad,
+        EaseInCubic, EaseOutCubic, EaseInOutCubic,
+        EaseInQuartic, EaseOutQuartic, EaseInOutQuartic, 
+        EaseInQuintic, EaseOutQuintic, EaseInOutQuintic,
+        EaseInSin, EaseOutSin, EaseInOutSin, 
+        EaseInExpo, EaseOutExpo, EaseInOutExpo, 
+        ParamentricBlend
+    }
+
     // t: current time
     // b: start value
     // c: change in value
@@ -23,18 +33,18 @@ public static class EasingCurveHelper
         return c * t * t + b;
     }
 
-    public static float EaseInOutQuad(float t, float b, float c, float d)
-    {
-        t /= d / 2;
-        if (t < 1) return c / 2 * t * t + b;
-        t--;
-        return -c / 2 * (t * (t - 2) - 1) + b;
-    }
-
     public static float EaseOutQuad(float t, float b, float c, float d)
     {
         t /= d;
         return -c * t * (t - 2) + b;
+    }
+
+    public static float EaseInOutQuad ( float t, float b, float c, float d )
+    {
+        t /= d / 2;
+        if ( t < 1 ) return c / 2 * t * t + b;
+        t--;
+        return -c / 2 * ( t * ( t - 2 ) - 1 ) + b;
     }
 
     // Cubic
