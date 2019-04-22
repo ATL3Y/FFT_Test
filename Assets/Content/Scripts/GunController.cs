@@ -7,7 +7,10 @@ public class GunController : MonoBehaviour
     public Transform muzzle;
     float kickBackTime = 1.0f;
     public AnimationCurve kickBackCurve;
-    private AudioSource audiosource;
+    [SerializeField]
+    private AudioSource audiosourceShoot;
+    [SerializeField]
+    private AudioSource audiosourceClick;
 
     [SerializeField]
     private GameObject missilePrefab;
@@ -15,27 +18,48 @@ public class GunController : MonoBehaviour
     [SerializeField]
     private List<Transform> waypoints;
     private int count = 0;
+    private float cooldown = 2.0f;
+    private bool readyToShoot = true;
 
     public void Start ( )
     {
-        audiosource = GetComponent<AudioSource> ( );
+        audiosourceShoot = GetComponent<AudioSource> ( );
     }
 
     public void Update ( )
     {
-        if ( Input.GetKeyDown ( KeyCode.Space ) )
+        cooldown -= Time.deltaTime;
+        Debug.Log ( OVRInput.Get ( OVRInput.Axis1D.PrimaryIndexTrigger, OVRInput.Controller.RTouch ) );
+        // Debug.Log ( OVRInput.Get ( OVRInput.Axis1D.PrimaryHandTrigger, OVRInput.Controller.LTouch ) );
+        if ( !readyToShoot )
         {
-            Use ( );
+            if ( OVRInput.Get ( OVRInput.Axis1D.PrimaryIndexTrigger, OVRInput.Controller.RTouch ) < 0.1f )
+            {
+                audiosourceClick.Play ( );
+                readyToShoot = true;
+            }
+        }
+
+        if(readyToShoot && cooldown < 0.0f )
+        {
+            // print ( "in" );
+            if ( OVRInput.Get ( OVRInput.Axis1D.PrimaryIndexTrigger, OVRInput.Controller.RTouch ) > 0.9f )
+            {
+                // print ( "in again" );
+                Use ( );
+                cooldown = 1.0f;
+                readyToShoot = false;
+            }
         }
 
         kickBackTime = Mathf.Clamp01 ( kickBackTime + Time.deltaTime * 2.0f );
-        // transform.localEulerAngles = new Vector3 ( kickBackCurve.Evaluate ( kickBackTime ) * -70, transform.localEulerAngles.y, transform.localEulerAngles.z );
+        //transform.localEulerAngles = new Vector3 ( kickBackCurve.Evaluate ( kickBackTime ) * -70, transform.localEulerAngles.y, transform.localEulerAngles.z );
     }
 
     public void Use ()
     {
-        audiosource.Play ( );
-        Missile missile = GameObject.Instantiate(missilePrefab, muzzle.position, muzzle.rotation, transform).GetComponent<Missile>();
+        audiosourceShoot.Play ( );
+        Missile missile = GameObject.Instantiate(missilePrefab, muzzle.position, muzzle.rotation).GetComponent<Missile>();
         if(count < waypoints.Count )
         {
             missile.Init ( this, muzzle, waypoints [ count ] );
