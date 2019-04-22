@@ -5,12 +5,16 @@ using UnityEngine;
 public class Star : MonoBehaviour
 {
     private Light l;
-    [SerializeField]
-    GameObject prefab;
+    [SerializeField] private GameObject prefab;
+    private int band;
+    private ParticleSystem particleSystem;
 
-    // Use this for initialization
-    void Start ( )
+    private void Start ( )
     {
+        // Assign each star a band from 0 to 7.
+        band = Random.Range ( 0, 7 );
+        
+
         //l = GetComponent<Light> ( );
         //l.intensity = transform.lossyScale.x;
         //l.range = 10.0f * transform.lossyScale.x * transform.lossyScale.x;
@@ -19,5 +23,13 @@ public class Star : MonoBehaviour
         sparkle.transform.localPosition = Vector3.zero;
         sparkle.transform.localRotation = Quaternion.identity;
         sparkle.transform.localScale = Vector3.one;
+        particleSystem = sparkle.GetComponent<ParticleSystem> ( );
+    }
+
+    private void Update ( )
+    {
+        float val = AudioFFT.audioBandBuffer [ band ];
+        var main = particleSystem.main;
+        main.simulationSpeed = val;
     }
 }
