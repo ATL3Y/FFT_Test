@@ -73,11 +73,11 @@ Material:
     - _BumpScale: 1
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DepthFactor: 2.5
+    - _DepthFactor: 2.89
     - _DetailNormalMapScale: 1
-    - _DistortStrength: 0.35
+    - _DistortStrength: 0.38
     - _DstBlend: 0
-    - _ExtraHeight: -0.5
+    - _ExtraHeight: -0.47
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -89,8 +89,8 @@ Material:
     - _SrcBlend: 1
     - _Surface: 0
     - _UVSec: 0
-    - _WaveAmp: 0.23
-    - _WaveSpeed: 30
+    - _WaveAmp: 0.35
+    - _WaveSpeed: 45.5
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:

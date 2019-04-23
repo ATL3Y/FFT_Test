@@ -119,12 +119,10 @@ public class PlayerMovement : MonoBehaviour
         {
             if( currentHitCount > 0 && playerVelocity < maxVelocity )
             {
-                print ( "inTwo" );
                 playerVelocity += Vector3.Magnitude ( handVelocity );
             }
         }
 
-        
         // oLHandPos = lHand.transform.position;
         oRHandPos = rHand.transform.position;
 
@@ -135,7 +133,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // starting to land = 1, landed = 0f.
             landingT = landingDist / landingLength;
-            landingT = landingT * landingT * landingT;
+            landingT = Mathf.Max ( .25f, landingT );
         }
 
         // Add playerVelocity to the player's position in terms of time. 

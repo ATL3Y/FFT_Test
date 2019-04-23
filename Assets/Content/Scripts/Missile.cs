@@ -45,9 +45,20 @@ public class Missile : MonoBehaviour
         rb = GetComponent<Rigidbody> ( );
         print ( "in init " + rb.name );
     }
-    
+
     private void FixedUpdate ( )
     {
+        // Line should run from our hand to target.
+        if ( line.enabled )
+        {
+            line.SetPosition ( 0, this.transform.position );
+            line.SetPosition ( 1, source.position );
+        }
+
+        if ( done )
+        {
+            return;
+        }
         // If we pass the target, self destruct.
         Vector3 toTarget = target.position - transform.position;
         if ( Vector3.Dot ( oToTarget, toTarget ) < 0.0f )
@@ -62,12 +73,7 @@ public class Missile : MonoBehaviour
             EmitDust ( );
         }
 
-        // Line should run from our hand to target.
-        if ( line.enabled )
-        {
-            line.SetPosition ( 0, this.transform.position );
-            line.SetPosition ( 1, source.position );
-        }
+
 
         if ( !hit )
         {
@@ -115,7 +121,7 @@ public class Missile : MonoBehaviour
         Done ( );
         audioSourceNegative.Play ( );
         GameObject.Instantiate ( poofFXPrefab, transform.position, transform.rotation );
-        CoHo.Instance.WaitAndCallback ( 1.0f, DestroyMe );
+        CoHo.Instance.WaitAndCallback ( 2.0f, DestroyMe );
     }
 
     private void DestroyMe ( )

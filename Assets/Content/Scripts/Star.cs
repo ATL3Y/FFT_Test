@@ -13,9 +13,22 @@ public class Star : MonoBehaviour
     private void Start ( )
     {
         // Assign each star a band from 0 to 7.
-        band = Random.Range ( 0, 7 );
+        band = Random.Range ( 0, 8 );
 
+        if(
+            (transform.parent.name.Contains("0") && (band == 6 || band == 7 ) )
+            || ( transform.parent.name.Contains ( "1" ) && ( band == 2 || band == 3 ) )
+            || ( transform.parent.name.Contains ( "2" ) && ( band == 0 || band == 1 ) )
+            || transform.parent.name.Contains ( "3" ) // && ( band == 4 || band == 5 ) )
+            ){
 
+        }
+        else
+        {
+            gameObject.SetActive ( false );
+        }
+
+        transform.localScale *= band;
         //l = GetComponent<Light> ( );
         //l.intensity = transform.lossyScale.x;
         //l.range = 10.0f * transform.lossyScale.x * transform.lossyScale.x;
@@ -38,6 +51,8 @@ public class Star : MonoBehaviour
         float val = AudioFFT.audioBandBuffer [ band ];
         var main = particleSystem.main;
         main.simulationSpeed = val;
+        main.startSizeMultiplier = 1.6f * val * val;
+
     }
 
 }
