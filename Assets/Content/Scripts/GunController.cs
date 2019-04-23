@@ -15,10 +15,7 @@ public class GunController : MonoBehaviour
     [SerializeField]
     private GameObject missilePrefab;
 
-    [SerializeField]
-    private List<Transform> waypoints;
-    private int count = 0;
-    private float cooldown = 2.0f;
+    private float cooldown = 1.0f;
     private bool readyToShoot = true;
 
     public void Start ( )
@@ -29,8 +26,7 @@ public class GunController : MonoBehaviour
     public void Update ( )
     {
         cooldown -= Time.deltaTime;
-        Debug.Log ( OVRInput.Get ( OVRInput.Axis1D.PrimaryIndexTrigger, OVRInput.Controller.RTouch ) );
-        // Debug.Log ( OVRInput.Get ( OVRInput.Axis1D.PrimaryHandTrigger, OVRInput.Controller.LTouch ) );
+
         if ( !readyToShoot )
         {
             if ( OVRInput.Get ( OVRInput.Axis1D.PrimaryIndexTrigger, OVRInput.Controller.RTouch ) < 0.1f )
@@ -40,12 +36,10 @@ public class GunController : MonoBehaviour
             }
         }
 
-        if(readyToShoot && cooldown < 0.0f )
+        if( readyToShoot && cooldown < 0.0f )
         {
-            // print ( "in" );
             if ( OVRInput.Get ( OVRInput.Axis1D.PrimaryIndexTrigger, OVRInput.Controller.RTouch ) > 0.9f )
             {
-                // print ( "in again" );
                 Use ( );
                 cooldown = 1.0f;
                 readyToShoot = false;
@@ -60,16 +54,7 @@ public class GunController : MonoBehaviour
     {
         audiosourceShoot.Play ( );
         Missile missile = GameObject.Instantiate(missilePrefab, muzzle.position, muzzle.rotation).GetComponent<Missile>();
-        if(count < waypoints.Count )
-        {
-            missile.Init ( this, muzzle, waypoints [ count ] );
-            count++;
-        }
-        else
-        {
-            // missile.Init ( this, muzzle.position + 100.0f * muzzle.forward );
-        }
-        
+        missile.Init ( this, muzzle );
         kickBackTime = 0.0f;
     }
 }

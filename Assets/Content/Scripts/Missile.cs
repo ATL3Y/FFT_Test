@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Missile : MonoBehaviour 
 {
-	private float speed = 350.0f; 
+	private float speed = 1000.0f; 
     private GunController gunController;
     public Transform target;
     private EasingCurveHelper.Curve curve = EasingCurveHelper.Curve.EaseInOutQuartic;
@@ -20,13 +20,26 @@ public class Missile : MonoBehaviour
     private bool done = false;
     private Vector3 oTargetDir;
 
-    public void Init ( GunController myGunController, Transform mySource, Transform myTarget )
+    private GameObject waypoint;
+    private float deceleration = 12.0f;
+    private float maxTurnSpeed = 15.0f;
+    private float currentTurnSpeed = 0.0f;
+    private float lifeTime = 3.5f;
+
+    [SerializeField]
+    private AudioSource audioSourcePositive;
+
+    [SerializeField]
+    private AudioSource audioSourceNegative;
+
+    public void Init ( GunController myGunController, Transform mySource )
     {
         line = GetComponent<LineRenderer> ( );
         line.enabled = false;
         gunController = myGunController;
         source = mySource;
-        target = myTarget;
+        target = PlayerMovement.instance.GetTargetWaypoint ( mySource.position, mySource.forward );
+
         oToTarget = target.position - transform.position;
 
         rb = GetComponent<Rigidbody> ( );
@@ -35,6 +48,20 @@ public class Missile : MonoBehaviour
     
     private void FixedUpdate ( )
     {
+        // If we pass the target, self destruct.
+        Vector3 toTarget = target.position - transform.position;
+        if ( Vector3.Dot ( oToTarget, toTarget ) < 0.0f )
+        {
+            EmitDust ( );
+        }
+
+        lifeTime -= Time.deltaTime;
+        // If our lifeTime is up and we haven't hit anything, self destruct;
+        if ( !hit && lifeTime < 0.0f )
+        {
+            EmitDust ( );
+        }
+
         // Line should run from our hand to target.
         if ( line.enabled )
         {
@@ -44,20 +71,14 @@ public class Missile : MonoBehaviour
 
         if ( !hit )
         {
+            currentTurnSpeed = Mathf.Lerp( currentTurnSpeed, maxTurnSpeed, Time.deltaTime);
             Vector3 targetDir = Vector3.Normalize( target.position - transform.position);
             Quaternion targetRot = Quaternion.LookRotation(targetDir);
-            transform.rotation = Quaternion.Slerp ( transform.rotation, targetRot, Time.deltaTime );
+            transform.rotation = Quaternion.Slerp ( transform.rotation, targetRot, currentTurnSpeed * Time.deltaTime );
+            speed -= deceleration * Time.deltaTime;
             rb.velocity = transform.forward * speed * Time.deltaTime;
         }
-
-        // If we pass the target, self destruct.
-        Vector3 toTarget = target.position - transform.position;
-        if ( Vector3.Dot ( oToTarget, toTarget ) < 0.0f )
-        {
-            EmitDust ( );
-        }
     }
-    
 
     private void OnCollisionEnter ( Collision collision )
     {
@@ -68,12 +89,16 @@ public class Missile : MonoBehaviour
         if(!hit)
         {
             hit = true;
+            PlayerMovement.instance.RegisterHit ( );
+            waypoint = collision.gameObject;
+            waypoint.GetComponent<Renderer> ( ).material.color = Color.cyan;
+            audioSourcePositive.Play ( );
             line.enabled = true;
             line.SetPosition ( 0, this.transform.position );
             line.SetPosition ( 1, source.position );
             transform.parent = collision.gameObject.transform;
             Done ( );
-            CoHo.Instance.WaitAndCallback ( 5.0f, EmitDust );
+            CoHo.Instance.WaitAndCallback ( 2.5f, EmitDust );
         }
     }
 
@@ -88,12 +113,18 @@ public class Missile : MonoBehaviour
     private void EmitDust ( )
     {
         Done ( );
+        audioSourceNegative.Play ( );
         GameObject.Instantiate ( poofFXPrefab, transform.position, transform.rotation );
-        CoHo.Instance.WaitAndCallback ( 0.5f, DestroyMe );
+        CoHo.Instance.WaitAndCallback ( 1.0f, DestroyMe );
     }
 
     private void DestroyMe ( )
     {
-        Destroy ( this.gameObject );
+        if ( hit )
+        {
+            PlayerMovement.instance.RegisterLoss ( );
+            waypoint.GetComponent<Renderer> ( ).material.color = Color.white;
+        }
+        gameObject.SetActive ( false );
     }
 }
