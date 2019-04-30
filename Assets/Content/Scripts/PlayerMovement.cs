@@ -8,6 +8,9 @@ public class PlayerMovement : MonoBehaviour
     public static PlayerMovement instance = null;
 
     [SerializeField]
+    private GameObject gun;
+
+    [SerializeField]
     private Transform root;
 
     [SerializeField]
@@ -51,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
             currentHitCount -= 1;
         }
     }
-
+    
     public Transform GetTargetWaypoint ( Vector3 sourcePos, Vector3 aimDir )
     {
         int index = waypoints.Count - 1;
@@ -70,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
 
         return waypoints [ index ];
     }
-
+    private int currentWaypointIndex;
     private void Awake ( )
     {
         if ( instance == null )
@@ -87,6 +90,7 @@ public class PlayerMovement : MonoBehaviour
     {
         oLHandPos = lHand.transform.position;
         oRHandPos = rHand.transform.position;
+        currentWaypointIndex = waypoints.Count - 1;
     }
 
     /*
@@ -103,6 +107,7 @@ public class PlayerMovement : MonoBehaviour
     public float deceleration = 1.0f;
     public float handVelocityMult = 1.2f;
     public float maxVelocity = 15.0f;
+    private bool gunGone = false;
     private void Update()
     {
 
@@ -115,7 +120,10 @@ public class PlayerMovement : MonoBehaviour
         Vector3 handVelocity = handVelocityMult * (rHand.transform.position - oRHandPos) / Time.deltaTime;
 
         // Calculate if hands are pushing back from our direction.
-        if ( Vector3.Dot ( targetDir, handVelocity.normalized ) < 0.0f )
+
+        // Calculate the targetDirection relative to the waypoint line... but move towards the planet;
+        Vector3 targetPullDir = Vector3.Normalize(waypoints[currentWaypointIndex].position - rHand.transform.position);
+        if ( Vector3.Dot ( targetPullDir, handVelocity.normalized ) < 0.0f )
         {
             if( currentHitCount > 0 && playerVelocity < maxVelocity )
             {
@@ -126,7 +134,7 @@ public class PlayerMovement : MonoBehaviour
         // oLHandPos = lHand.transform.position;
         oRHandPos = rHand.transform.position;
 
-        float landingDist = Vector3.Distance ( root.position, waypoints [ waypoints.Count - 1 ].position );
+        float landingDist = Vector3.Distance ( root.position, target.position );
         float landingLength = 40.0f;
         float landingT = 1.0f;
         if ( landingDist < landingLength )
@@ -134,6 +142,20 @@ public class PlayerMovement : MonoBehaviour
             // starting to land = 1, landed = 0f.
             landingT = landingDist / landingLength;
             landingT = Mathf.Max ( .25f, landingT );
+
+            if(!gunGone && landingDist < 1f )
+            {
+                gunGone = true;
+                gun.SetActive ( false );
+                GetComponent<AudioSource> ( ).Play ( );
+            }
+
+            /*
+            if(landingDist < 2f )
+            {
+                return;
+            }
+            */
         }
 
         // Add playerVelocity to the player's position in terms of time. 

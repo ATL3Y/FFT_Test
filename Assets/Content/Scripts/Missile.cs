@@ -73,8 +73,6 @@ public class Missile : MonoBehaviour
             EmitDust ( );
         }
 
-
-
         if ( !hit )
         {
             currentTurnSpeed = Mathf.Lerp( currentTurnSpeed, maxTurnSpeed, Time.deltaTime);

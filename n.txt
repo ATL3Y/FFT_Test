@@ -1,0 +1,5 @@
+zone 0, stem 0 -> band 6 & 7
+zone 1, stem 1 -> band 2 & 3
+zone 2, stem 2 -> band 0 & 1
+zone 3, stem 3 -> band 4 & 5
+zone 3, stem 4 -> all
